@@ -7,6 +7,7 @@ import datasets
 from datasets import load_from_disk, load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
+from tqdm import tqdm
 
 
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
@@ -40,10 +41,10 @@ def generate_sample(model, tokenizer, input_txt):
     input_ids = tokenizer.encode(input_txt)
     raw_text_len = len(input_ids)
     context_enc = torch.tensor([input_ids]).to(model.device)
-    print(f"Input text: {input_txt}\n")
+    # print(f"Input text: {input_txt}\n")
     outputs = model.generate(context_enc)
     output_text = decode(outputs, tokenizer, raw_text_len)[0]
-    print(f"\nOutput text: {output_text}\n")
+    # print(f"\nOutput text: {output_text}\n")
     return output_text
 
 
@@ -87,45 +88,46 @@ if __name__ == "__main__":
         "--checkpoint-path",
         type=str,
         help="Checkpoint path",
-        default="Qwen/Qwen-7B",
+        default="Qwen/Qwen2.5-0.5B-Instruct",
     )
     parser.add_argument("-f", "--sample-input-file", type=str, default=None)
     parser.add_argument(
-        "-o", "--sample-output-file", type=str, default="gsm8k_res.jsonl"
+        "-o", "--sample-output-file", type=str, default="./results/gsm8k_res.jsonl"
     )
 
     args = parser.parse_args()
 
-    fewshot_prompt = open("gsm8k_prompt.txt").read()
+    fewshot_prompt = open(".data/gsm8k/gsm8k_prompt.txt").read()
     if args.sample_input_file is not None:
         dataset = load_from_disk(args.sample_input_file)
     else:
         config = datasets.DownloadConfig(resume_download=True, max_retries=100)
-        dataset = load_dataset("gsm8k", "main", download_config=config)
+        dataset = load_dataset("HumanEval", "main", download_config=config)
 
     test = dataset["test"]
 
     print("Loading tokenizer ...")
     tokenizer = AutoTokenizer.from_pretrained(
-        'Qwen/Qwen2.5-0.5B-Instruct', trust_remote_code=True
+        args.checkpoint_path, trust_remote_code=True
     )
 
     print("Loading model ...")
     model = AutoModelForCausalLM.from_pretrained(
-        'Qwen/Qwen2.5-0.5B-Instruct', device_map="auto", trust_remote_code=True
+        args.checkpoint_path, device_map="auto", trust_remote_code=True
     ).eval()
     model.generation_config = GenerationConfig.from_pretrained(
         args.checkpoint_path, trust_remote_code=True
     )
+    model.generation_config.max_length = 256
     model.generation_config.do_sample = False
 
-    test_prompt = "hello, who are you?"
-    _test(model, tokenizer, test_prompt)
+    # test_prompt = "hello, who are you?"
+    # _test(model, tokenizer, test_prompt)
     # exit()
     f_output = jsonlines.Writer(open(args.sample_output_file, "w", encoding="utf-8"))
     tot_length = test.num_rows
     acc_res = []
-    for doc in test:
+    for doc in tqdm(test):
         context = doc_to_text(doc)
         completion = generate_sample(model, tokenizer, context)
         answer = doc["answer"]
