@@ -8,6 +8,7 @@ from datasets import load_from_disk, load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 from tqdm import tqdm
+import os
 
 
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
@@ -92,17 +93,17 @@ if __name__ == "__main__":
     )
     parser.add_argument("-f", "--sample-input-file", type=str, default=None)
     parser.add_argument(
-        "-o", "--sample-output-file", type=str, default="./results/gsm8k_res.jsonl"
+        "-o", "--sample-output-dir", type=str, default="./results/gsm8k/"
     )
 
     args = parser.parse_args()
 
-    fewshot_prompt = open("data/gsm8k/gsm8k_prompt.txt").read()
+    fewshot_prompt = open("./data/gsm8k/gsm8k_prompt.txt").read()
     if args.sample_input_file is not None:
         dataset = load_from_disk(args.sample_input_file)
     else:
         config = datasets.DownloadConfig(resume_download=True, max_retries=100)
-        dataset = load_dataset("gsm8k", "main", download_config=config)
+        dataset = load_dataset("openai/gsm8k", "main", download_config=config)
 
     test = dataset["test"]
 
@@ -118,13 +119,20 @@ if __name__ == "__main__":
     model.generation_config = GenerationConfig.from_pretrained(
         args.checkpoint_path, trust_remote_code=True
     )
-    model.generation_config.max_length = 2048
+    # model.generation_config.max_length = 256
+    model.generation_config.max_new_tokens = 512
     model.generation_config.do_sample = False
+    pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    model.generation_config.pad_token_id = pad_token_id
+    # print(model.generation_config)
+    # exit()
 
     # test_prompt = "hello, who are you?"
     # _test(model, tokenizer, test_prompt)
     # exit()
-    f_output = jsonlines.Writer(open(args.sample_output_file, "w", encoding="utf-8"))
+    if not os.path.exists(args.sample_output_dir):
+        os.makedirs(args.sample_output_dir)
+    f_output = jsonlines.Writer(open(os.path.join(args.sample_output_dir, args.checkpoint_path.replace('/', '_') + '.jsonl') , "w", encoding="utf-8"))
     tot_length = test.num_rows
     acc_res = []
     for doc in tqdm(test):
