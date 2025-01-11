@@ -4,6 +4,7 @@ import transformers
 import torch
 import datasets
 from datasets import load_from_disk, load_dataset
+import re
 
 def load_jsonlines(file_name: str):
     with open(file_name, 'r') as f:
@@ -31,18 +32,19 @@ def nshot_chats(nshot_data: list, n: int, question: str) -> dict:
     return chats
 
 def extract_ans_from_response(answer: str, eos=None):
-    if eos:
-        answer = answer.split(eos)[0].strip()
+    # if eos:
+    #     answer = answer.split(eos)[0].strip()
 
-    answer = answer.split('####')[-1].strip()
+    # answer = answer.split('####')[-1].strip()
 
-    for remove_char in [',', '$', '%', 'g']:
-        answer = answer.replace(remove_char, '')
+    # for remove_char in [',', '$', '%', 'g']:
+    #     answer = answer.replace(remove_char, '')
 
-    try:
-        return int(answer)
-    except ValueError:
-        return answer
+    # try:
+    #     return int(answer)
+    # except ValueError:
+    last_number = re.findall(r"\d+", answer)[-1]
+    return last_number
 
 model_name = "unsloth/Llama-3.2-1B-Instruct"
 
