@@ -54,30 +54,33 @@ def get_response(chats, generator):
         gen_text = generator(chats, max_new_tokens=1024)[0]  # First return sequence
         return gen_text['generated_text'][-1]['content']
 
-def prepare(model_name):
-    model = transformers.AutoModelForCausalLM.from_pretrained(
-        model_name,
-        device_map="auto",
-        # quantization_config=bnb_config,
-    )
-
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        model_name, 
-    )
-
-    generator = transformers.pipeline(
-        "text-generation",
-        model=model,
-        tokenizer=tokenizer,
-        pad_token_id=tokenizer.eos_token_id,
-    )
+def prepare(models):
+    model_list = [
+        transformers.AutoModelForCausalLM.from_pretrained(
+            model_name,
+            device_map="auto",
+        ) for model_name in models
+    ]
+    tokenizer_list = [
+        transformers.AutoTokenizer.from_pretrained(
+            model_name, 
+        ) for model_name in models
+    ]
+    generator_list = [
+        transformers.pipeline(
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+            pad_token_id=tokenizer.eos_token_id,
+        ) for model, tokenizer in zip(model_list, tokenizer_list)
+    ]
 
     config = datasets.DownloadConfig(resume_download=True, max_retries=100)
     dataset = load_dataset("gsm8k", "main", download_config=config)
     train_dataset = dataset["train"]
     train_data = [{"question": row["question"], "answer": row["answer"]} for row in train_dataset]
     test_data = dataset["test"]
-    return train_data, test_data, generator
+    return train_data, test_data, generator_list
 
 def run_once(train_data, qna, generator):
     messages = nshot_chats(nshot_data=train_data, n=N_SHOT, question=qna['question'])
@@ -85,15 +88,16 @@ def run_once(train_data, qna, generator):
     
     return messages, response
     
-def run_all(train_data, test_data, generator, log_file_path=None, attempts=1):
+def run_all(train_data, test_data, generators, log_file_path=None, attempts=1):
     correct = 0
     total = 0
     for qna in tqdm(test_data):
         pred_ans_list = []
-        for _ in range(attempts):
-            _, response = run_once(train_data, qna, generator)
-            pred_ans = extract_ans_from_response(response)
-            pred_ans_list.append(pred_ans)
+        for generator in generators:
+            for _ in range(attempts):
+                _, response = run_once(train_data, qna, generator)
+                pred_ans = extract_ans_from_response(response)
+                pred_ans_list.append(pred_ans)
         
         pred_ans = max(set(pred_ans_list), key=pred_ans_list.count)
         true_ans = extract_ans_from_response(qna['answer'])
@@ -112,7 +116,7 @@ def run_all(train_data, test_data, generator, log_file_path=None, attempts=1):
             correct += 1
     print(f"Final Accuracy: {correct/total:.3f}")
 
-def run(model_name, log_dir=None, attempts=1):
+def run(models, log_dir=None, attempts=1):
     log_file_path = None
     if log_dir:
         file_name = f'errors_{attempts}attempt.txt'
@@ -121,11 +125,13 @@ def run(model_name, log_dir=None, attempts=1):
             os.makedirs(log_dir)
         with open(log_file_path, 'w') as log_file:
             log_file.write('')
-    train_data, test_data, generator = prepare(model_name)
-    run_all(train_data, test_data, generator, log_file_path, attempts)
+    train_data, test_data, generators = prepare(models)
+    run_all(train_data, test_data, generators, log_file_path, attempts)
     
 if __name__ == "__main__":
-    # model_name = "Qwen/Qwen2.5-0.5B-Instruct"
-    # model_name = "unsloth/Llama-3.2-1B-Instruct"
-    model_name = "tiiuae/Falcon3-1B-Instruct"
-    run(model_name, f'log/{model_name}/', attempts=1)
+    models = [
+        "Qwen/Qwen2.5-0.5B-Instruct",
+        "unsloth/Llama-3.2-1B-Instruct",
+        "tiiuae/Falcon3-1B-Instruct",
+    ]
+    run(models, f'log/multi_model/', attempts=3)
