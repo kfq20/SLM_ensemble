@@ -54,6 +54,10 @@ def get_response(chats, generator):
         gen_text = generator(chats, max_new_tokens=1024)[0]  # First return sequence
         return gen_text['generated_text'][-1]['content']
 
+def get_batch_response(chats, generator): 
+    gen_texts = generator(chats, max_new_tokens=1024, batch_size=len(chats))  # First return sequence
+    return [gen_text[0]['generated_text'][-1]['content'] for gen_text in gen_texts]
+
 def prepare(model_name):
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_name,
@@ -85,34 +89,43 @@ def run_once(train_data, qna, generator):
     
     return messages, response
     
-def run_all(train_data, test_data, generator, log_file_path=None, attempts=1):
+def batch_run_once(train_data, qnas, generator):
+    messages = [nshot_chats(train_data, N_SHOT, qnas['question'][i]) for i in range(len(qnas))]
+    response = get_batch_response(messages, generator)
+    
+    return messages, response
+
+def run_all(train_data, test_data, generator, log_file_path=None, attempts=1, batch_size=4):
     correct = 0
     total = 0
-    for qna in tqdm(test_data):
-        pred_ans_list = []
+    for i in tqdm(range(0, len(test_data), batch_size)):
+        batch_qna = test_data[i:i + batch_size]
+        all_pred_ans_list = []
         for _ in range(attempts):
-            _, response = run_once(train_data, qna, generator)
-            pred_ans = extract_ans_from_response(response)
-            pred_ans_list.append(pred_ans)
+            _, responses = batch_run_once(train_data, batch_qna, generator)
+            pred_ans = [extract_ans_from_response(response) for response in responses]
+            all_pred_ans_list.append(pred_ans) # shape: [attempts, batch_size] 
         
-        pred_ans = max(set(pred_ans_list), key=pred_ans_list.count)
-        true_ans = extract_ans_from_response(qna['answer'])
-        total += 1
-        
-        if pred_ans != true_ans and log_file_path:
-            with open(log_file_path, 'a', encoding='utf-8') as log_file:
-                # log_file.write(f"{messages}\n\n")
-                # log_file.write(f"Response: {response}\n\n")
-                log_file.write(f"Prediction List: {pred_ans_list}\n\n")
-                log_file.write(f"Prediction: {pred_ans}\n\n")
-                log_file.write(f"Ground Truth: {qna['answer']}\n\n")
-                log_file.write(f"Current Accuracy: {correct/total:.3f}\n\n")
-                log_file.write('\n\n')
-        else:
-            correct += 1
+        for b in range(len(batch_qna)):
+            pred_ans_list = [attempts_ans_list[b] for attempts_ans_list in all_pred_ans_list]
+            pred_ans = max(set(pred_ans_list), key=pred_ans_list.count)
+            true_ans = extract_ans_from_response(batch_qna['answer'][b])
+            total += 1
+            
+            if pred_ans != true_ans and log_file_path:
+                with open(log_file_path, 'a', encoding='utf-8') as log_file:
+                    # log_file.write(f"{messages}\n\n")
+                    # log_file.write(f"Response: {response}\n\n")
+                    log_file.write(f"Prediction List: {pred_ans_list}\n\n")
+                    log_file.write(f"Prediction: {pred_ans}\n\n")
+                    log_file.write(f"Ground Truth: {batch_qna['answer'][b]}\n\n")
+                    log_file.write(f"Current Accuracy: {correct/total:.3f}\n\n")
+                    log_file.write('\n\n')
+            else:
+                correct += 1
     print(f"Final Accuracy: {correct/total:.3f}")
 
-def run(model_name, log_dir=None, attempts=1):
+def run(model_name, log_dir=None, attempts=1, batch_size=9):
     log_file_path = None
     if log_dir:
         file_name = f'errors_{attempts}attempt.txt'
@@ -122,15 +135,8 @@ def run(model_name, log_dir=None, attempts=1):
         with open(log_file_path, 'w') as log_file:
             log_file.write('')
     train_data, test_data, generator = prepare(model_name)
-    run_all(train_data, test_data, generator, log_file_path, attempts)
+    run_all(train_data, test_data, generator, log_file_path, attempts, batch_size)
     
 if __name__ == "__main__":
-    model_name = "tiiuae/Falcon3-1B-Instruct"
-    run(model_name, f'log/{model_name}/', attempts=1)
-# messages = nshot_chats(nshot_data=train_data, n=N_SHOT, question=test_data[0]['question'])  # 8-shot prompt
-
-# response = get_response(messages)
-# print(response)
-
-# pred_ans = extract_ans_from_response(response)
-# pred_ans
+    model_name = "unsloth/Llama-3.2-1B-Instruct"
+    run(model_name, 'log/llama3/', attempts=9, batch_size=9)
