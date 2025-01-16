@@ -1,0 +1,38 @@
+Prediction List: ['46']
+
+Prediction: 46
+
+Ground Truth: Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.
+She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+#### 18
+
+Current Accuracy: 0.000
+
+
+
+Prediction List: ['000']
+
+Prediction: 000
+
+Ground Truth: The cost of the house and repairs came out to 80,000+50,000=$<<80000+50000=130000>>130,000
+He increased the value of the house by 80,000*1.5=<<80000*1.5=120000>>120,000
+So the new value of the house is 120,000+80,000=$<<120000+80000=200000>>200,000
+So he made a profit of 200,000-130,000=$<<200000-130000=70000>>70,000
+#### 70000
+
+Current Accuracy: 0.333
+
+
+
+Prediction List: ['100']
+
+Prediction: 100
+
+Ground Truth: If each chicken eats 3 cups of feed per day, then for 20 chickens they would need 3*20=<<3*20=60>>60 cups of feed per day.
+If she feeds the flock 15 cups of feed in the morning, and 25 cups in the afternoon, then the final meal would require 60-15-25=<<60-15-25=20>>20 cups of chicken feed.
+#### 20
+
+Current Accuracy: 0.400
+
+
+

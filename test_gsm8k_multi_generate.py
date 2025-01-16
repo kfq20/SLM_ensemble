@@ -125,7 +125,9 @@ def run(model_name, log_dir=None, attempts=1):
     run_all(train_data, test_data, generator, log_file_path, attempts)
     
 if __name__ == "__main__":
-    model_name = "unsloth/Llama-3.2-1B-Instruct"
+    # model_name = "Qwen/Qwen2.5-0.5B-Instruct"
+    # model_name = "unsloth/Llama-3.2-1B-Instruct"
+    model_name = "tiiuae/Falcon3-1B-Instruct"
     run(model_name, f'log/{model_name}/', attempts=1)
 # messages = nshot_chats(nshot_data=train_data, n=N_SHOT, question=test_data[0]['question'])  # 8-shot prompt
 
