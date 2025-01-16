@@ -1,0 +1,14 @@
+Prediction List: ['000', '000', '000', '120000', '000', '000', '120000', '000', '000']
+
+Prediction: 000
+
+Ground Truth: The cost of the house and repairs came out to 80,000+50,000=$<<80000+50000=130000>>130,000
+He increased the value of the house by 80,000*1.5=<<80000*1.5=120000>>120,000
+So the new value of the house is 120,000+80,000=$<<120000+80000=200000>>200,000
+So he made a profit of 200,000-130,000=$<<200000-130000=70000>>70,000
+#### 70000
+
+Current Accuracy: 0.667
+
+
+

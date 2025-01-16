@@ -7,6 +7,7 @@ from datasets import load_from_disk, load_dataset
 import re
 import os
 from tqdm import tqdm
+import time as tm
 
 N_SHOT = 8
 
@@ -50,9 +51,9 @@ def extract_ans_from_response(answer: str, eos=None):
     last_number = re.findall(r"\d+", answer)[-1]
     return last_number
 
-def get_response(chats, generator): 
-        gen_text = generator(chats, max_new_tokens=1024)[0]  # First return sequence
-        return gen_text['generated_text'][-1]['content']
+def get_responses(chats, generator): 
+    gen_text = generator(chats, max_new_tokens=1024)
+    return [text[0]['generated_text'][-1]['content'] for text in gen_text]
 
 def prepare(model_name):
     model = transformers.AutoModelForCausalLM.from_pretrained(
@@ -79,21 +80,22 @@ def prepare(model_name):
     test_data = dataset["test"]
     return train_data, test_data, generator
 
-def run_once(train_data, qna, generator):
-    messages = nshot_chats(nshot_data=train_data, n=N_SHOT, question=qna['question'])
-    response = get_response(messages, generator)
-    
-    return messages, response
+def run_once(train_data, qna, generator, attempts=1):
+    t1 = tm.time()
+    messages = [nshot_chats(nshot_data=train_data, n=N_SHOT, question=qna['question']) for _ in range(attempts)]
+    t2 = tm.time()
+    responses = get_responses(messages, generator)
+    t3 = tm.time()
+    print(f"Time to generate messages: {t2-t1:.3f}")
+    print(f"Time to generate responses: {t3-t2:.3f}")
+    return messages, responses
     
 def run_all(train_data, test_data, generator, log_file_path=None, attempts=1):
     correct = 0
     total = 0
     for qna in tqdm(test_data):
-        pred_ans_list = []
-        for _ in range(attempts):
-            _, response = run_once(train_data, qna, generator)
-            pred_ans = extract_ans_from_response(response)
-            pred_ans_list.append(pred_ans)
+        _, responses = run_once(train_data, qna, generator, attempts)
+        pred_ans_list = [extract_ans_from_response(r) for r in responses]
         
         pred_ans = max(set(pred_ans_list), key=pred_ans_list.count)
         true_ans = extract_ans_from_response(qna['answer'])
@@ -126,7 +128,7 @@ def run(model_name, log_dir=None, attempts=1):
     
 if __name__ == "__main__":
     model_name = "unsloth/Llama-3.2-1B-Instruct"
-    run(model_name, 'log/llama3/', attempts=1)
+    run(model_name, 'log/llama3/', attempts=9)
 # messages = nshot_chats(nshot_data=train_data, n=N_SHOT, question=test_data[0]['question'])  # 8-shot prompt
 
 # response = get_response(messages)
