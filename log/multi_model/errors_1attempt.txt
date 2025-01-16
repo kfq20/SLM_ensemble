@@ -1,0 +1,99 @@
+Prediction List: ['14', '12', '20']
+
+Prediction: 20
+
+Ground Truth: Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.
+She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+#### 18
+
+Current Accuracy: 0.000
+
+
+
+Prediction List: ['000', '000', '120']
+
+Prediction: 000
+
+Ground Truth: The cost of the house and repairs came out to 80,000+50,000=$<<80000+50000=130000>>130,000
+He increased the value of the house by 80,000*1.5=<<80000*1.5=120000>>120,000
+So the new value of the house is 120,000+80,000=$<<120000+80000=200000>>200,000
+So he made a profit of 200,000-130,000=$<<200000-130000=70000>>70,000
+#### 70000
+
+Current Accuracy: 0.333
+
+
+
+Prediction List: ['120', '760', '14']
+
+Prediction: 14
+
+Ground Truth: If each chicken eats 3 cups of feed per day, then for 20 chickens they would need 3*20=<<3*20=60>>60 cups of feed per day.
+If she feeds the flock 15 cups of feed in the morning, and 25 cups in the afternoon, then the final meal would require 60-15-25=<<60-15-25=20>>20 cups of chicken feed.
+#### 20
+
+Current Accuracy: 0.400
+
+
+
+Prediction List: ['16', '18', '40']
+
+Prediction: 18
+
+Ground Truth: The discount price of one glass is 60/100 * 5 = $<<60/100*5=3>>3.
+If every second glass is cheaper, that means Kylar is going to buy 16 / 2 = <<16/2=8>>8 cheaper glasses.
+So for the cheaper glasses, Kylar is going to pay 8 * 3 = $<<8*3=24>>24.
+And for the regular-priced glasses, Kylar will pay 8 * 5 = $<<8*5=40>>40.
+So in total Kylar needs to pay 24 + 40 = $<<24+40=64>>64 for the glasses he wants to buy.
+#### 64
+
+Current Accuracy: 0.333
+
+
+
+Prediction List: ['6', '1', '140']
+
+Prediction: 140
+
+Ground Truth: First find how many gigabytes are in 40% of the file: 200 GB * 40% = <<200*40*.01=80>>80 GB
+Then divide that number by the download rate to find the time until Windows restarts: 80 GB / 2 GB/minute = <<80/2=40>>40 minutes
+Then find the time to download the whole file after the restart: 200 GB / 2 GB/minute = <<200/2=100>>100 minutes
+Then add the time to download 40% of the file, to download the whole file, and to wait for Windows to update: 40 minutes + 100 minutes + 20 minutes = <<40+100+20=160>>160 minutes
+#### 160
+
+Current Accuracy: 0.375
+
+
+
+Prediction List: ['560', '340', '326']
+
+Prediction: 340
+
+Ground Truth: When he turned around he was 3*60=<<3*60=180>>180 miles from home
+He was only able to drive 4-2=<<4-2=2>>2 hours in the first four hours
+In half an hour he goes 30*.5=<<30*.5=15>>15 miles
+He then drives another 2-.5=<<2-.5=1.5>>1.5 hours
+In that time he goes 80*1.5=<<80*1.5=120>>120 miles
+So he drove 120+15=<<120+15=135>>135 miles
+So he is 180-135=<<180-135=45>>45 miles away from home
+#### 45
+
+Current Accuracy: 0.333
+
+
+
+Prediction List: ['16060', '460', '75']
+
+Prediction: 75
+
+Ground Truth: Eliza is entitled to 45 -40 = <<45-40=5>>5 hours overtime pay.
+Her hourly rate for the overtime pay is $10 x 1.2 = $<<10*1.2=12>>12.
+So, Eliza will receive $12 x 5 =$<<12*5=60>>60 for overtime pay.
+Her regular weekly earning is $10 x 40 = $<<10*40=400>>400.
+Thus, Eliza will receive a total of $400 + $60 = $<<400+60=460>>460 for this week's work.
+#### 460
+
+Current Accuracy: 0.300
+
+
+
