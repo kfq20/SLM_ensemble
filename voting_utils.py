@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from collections import Counter
 
 def top_k_top_p_filtering(logits, top_k=50, top_p=0.9, min_tokens_to_keep=1):
     """
@@ -47,8 +48,8 @@ def sampling(logits, top_k, top_p):
     # Step 2: Sample next token
     probabilities = F.softmax(logits, dim=-1)
 
-    # TODO: fix the bug of probabilities
-    probabilities = torch.clamp(probabilities, min=0.0)
+    # TODO: fix the bug of negative probabilities
+    probabilities = torch.clamp(probabilities, min=1e-9)
     next_token = torch.multinomial(probabilities, num_samples=1).squeeze(1)
     return next_token
 
@@ -61,3 +62,7 @@ def calculate_entropy(logits: torch.Tensor):
     entropy_value = -torch.sum(probabilities * torch.log(probabilities + 1e-9), dim=-1)  # Add small value to avoid log(0)
 
     return entropy_value
+
+def most_common_from_list(list_for_choose):
+    most_common_element = Counter(list_for_choose).most_common()[0][0]
+    return most_common_element
