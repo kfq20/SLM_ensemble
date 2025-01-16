@@ -97,12 +97,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    fewshot_prompt = open(".data/gsm8k/gsm8k_prompt.txt").read()
+    fewshot_prompt = open("data/gsm8k/gsm8k_prompt.txt").read()
     if args.sample_input_file is not None:
         dataset = load_from_disk(args.sample_input_file)
     else:
         config = datasets.DownloadConfig(resume_download=True, max_retries=100)
-        dataset = load_dataset("HumanEval", "main", download_config=config)
+        dataset = load_dataset("gsm8k", "main", download_config=config)
 
     test = dataset["test"]
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     model.generation_config = GenerationConfig.from_pretrained(
         args.checkpoint_path, trust_remote_code=True
     )
-    model.generation_config.max_length = 256
+    model.generation_config.max_length = 2048
     model.generation_config.do_sample = False
 
     # test_prompt = "hello, who are you?"
