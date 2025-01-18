@@ -1,5 +1,29 @@
 # SLM_ensemble
 
+## Low-level Ensemble
+### Logits level
+
+```sh
+python test_gsm8k_logitsvote.py
+```
+使用上述代码来快速启动测试（默认为使用 performance weighted 加权）
+调整 `test_gsm8k_logitsvote.py` 的第 69 - 76 行来改变 Logits level 的集成方法
+
+### Token level
+- **Different Model Same Input**
+```sh
+python test_gsm8k_tokenvote.py
+```
+使用上述代码来快速启动测试（默认为使用所有四个模型）
+调整 `test_gsm8k_tokenvote.py` 的第 55 - 58 行来改变使用的模型类型
+
+- **Same Model Different Few Shot**
+```sh
+python test_gsm8k_tokenvote_difshot.py
+```
+使用上述代码来快速启动测试（默认为使用五个Qwen 0.5B模型）
+调整 `test_gsm8k_tokenvote_difshot.py` 的第 59, 60 行来改变使用的模型类型和数量
+
 ## Agent-Level集成
 
 ### 运行方式与参数说明

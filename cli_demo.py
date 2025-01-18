@@ -19,8 +19,8 @@ def decode(tokens_list, tokenizer, raw_text_len):
         tokens = tokens.cpu().numpy().tolist()
         sent = tokenizer.decode(tokens[raw_text_len:])
         sent = sent.split("<|endoftext|>")[0]
-        # sent = sent.split("\n\n\n")[0]
-        # sent = sent.split("\n\n")[0]
+        sent = sent.split("\n\n\n")[0]
+        sent = sent.split("\n\n")[0]
         # sent = sent.split("Question:")[0]
         sents.append(sent)
     return sents
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         "--checkpoint-path",
         type=str,
         help="Checkpoint path",
-        default="Qwen/Qwen-7B",
+        default="Qwen/Qwen2.5-0.5B-Instruct",
     )
     parser.add_argument(
         "-o", "--log-path", type=str, default="log.jsonl"
@@ -51,22 +51,33 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    config = datasets.DownloadConfig(resume_download=True, max_retries=100)
-
-
+    print("Loading tokenizer ...")
     tokenizer = AutoTokenizer.from_pretrained(
-        'Qwen/Qwen2.5-0.5B-Instruct', trust_remote_code=True
+        args.checkpoint_path, trust_remote_code=True
     )
 
     print("Loading model ...")
     model = AutoModelForCausalLM.from_pretrained(
-        'Qwen/Qwen2.5-0.5B-Instruct', device_map="auto", trust_remote_code=True
+        args.checkpoint_path, device_map="auto", trust_remote_code=True
     ).eval()
-
     model.generation_config = GenerationConfig.from_pretrained(
         args.checkpoint_path, trust_remote_code=True
     )
-    model.generation_config.do_sample = False
+    # model.generation_config.max_length = 256
+    model.generation_config.max_new_tokens = 512
+    # model.generation_config.do_sample = False
+    pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    model.generation_config.pad_token_id = pad_token_id
+    # print(model.generation_config)
+    # exit()
+
+    if not os.path.exists('./model_cards'):
+        os.mkdir('./model_cards')
+    with open(f"./model_cards/{args.checkpoint_path.replace('/', '-')}.txt", "w") as f:
+        f.write(f"Tokenizer: {tokenizer.__class__} vocab_size: {tokenizer.vocab_size}\n")
+        f.write(f"Model: {model.__class__}\n")
+        f.write(f"Model_Config: {model.config}\n")
+        f.write(f"Generation_Config: {model.generation_config}")
 
     prompt = ''
     print('>> ', end='')
