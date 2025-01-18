@@ -7,11 +7,31 @@ import datasets
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from transformers.generation import GenerationConfig
-from test_qwen_gsm8k import *
 from tqdm import tqdm
 
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
 INVALID_ANS = "[invalid]"
+
+def is_correct(completion, answer):
+    gold = extract_answer_hf(answer)
+    assert gold != INVALID_ANS, "No ground truth answer found in the document."
+    return extract_answer(completion) == gold
+
+def extract_answer_hf(completion):
+    match = ANS_RE.search(completion)
+    if match:
+        match_str = match.group(1).strip()
+        match_str = match_str.replace(",", "")
+        return eval(match_str)
+    else:
+        return INVALID_ANS
+
+def extract_answer(completion):
+    try:
+        last_number = re.findall(r"\d+", completion)[-1]
+        return eval(last_number)
+    except:
+        return INVALID_ANS
 
 def load_prompts(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -62,7 +82,7 @@ def solver_critic_generate(question, answers, generator):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test HF checkpoint.")
     parser.add_argument(
-        "-o", "--sample-output-file", type=str, default="./agent_ensemble_results/gsm8k_res_agent_ensemble.jsonl"
+        "-o", "--sample-output-file", type=str, default="./log/gsm8k_res_agent_ensemble.jsonl"
     )
     parser.add_argument(
         "--planner-model", 
@@ -75,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--solver-model", 
         type=str, 
-        default="Qwen/Qwen2.5-0.5B-Instruct", 
+        default="unsloth/Llama-3.2-1B-Instruct", 
         choices=["l", "unsloth/Llama-3.2-1B-Instruct", "f", "tiiuae/Falcon3-1B-Instruct", "q", "Qwen/Qwen2.5-0.5B-Instruct"], 
         dest="solver_model"
     )
@@ -83,7 +103,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--evaluator-model", 
         type=str, 
-        default="Qwen/Qwen2.5-0.5B-Instruct", 
+        default="unsloth/Llama-3.2-1B-Instruct", 
         choices=["l", "unsloth/Llama-3.2-1B-Instruct", "f", "tiiuae/Falcon3-1B-Instruct", "q", "Qwen/Qwen2.5-0.5B-Instruct"], 
         dest="evaluator_model"
     )
@@ -91,16 +111,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load models and tokenizers
-    planner_model = AutoModelForCausalLM.from_pretrained(args.planner_model, device_map="cuda:0", trust_remote_code=True).eval()
+    planner_model = AutoModelForCausalLM.from_pretrained(args.planner_model, device_map='auto', trust_remote_code=True).eval()
     planner_tokenizer = AutoTokenizer.from_pretrained(args.planner_model, trust_remote_code=True)
 
-    solver_model = AutoModelForCausalLM.from_pretrained(args.solver_model, device_map="cuda:1", trust_remote_code=True).eval()
+    solver_model = AutoModelForCausalLM.from_pretrained(args.solver_model, device_map='auto', trust_remote_code=True).eval()
     solver_tokenizer = AutoTokenizer.from_pretrained(args.solver_model, trust_remote_code=True)
 
-    planner_critic_model = AutoModelForCausalLM.from_pretrained(args.evaluator_model, device_map="cuda:2", trust_remote_code=True).eval()
+    planner_critic_model = AutoModelForCausalLM.from_pretrained(args.evaluator_model, device_map='auto', trust_remote_code=True).eval()
     planner_critic_tokenizer = AutoTokenizer.from_pretrained(args.evaluator_model, trust_remote_code=True)
 
-    solver_critic_model = AutoModelForCausalLM.from_pretrained(args.evaluator_model, device_map="cuda:3", trust_remote_code=True).eval()
+    solver_critic_model = AutoModelForCausalLM.from_pretrained(args.evaluator_model, device_map='auto', trust_remote_code=True).eval()
     solver_critic_tokenizer = AutoTokenizer.from_pretrained(args.evaluator_model, trust_remote_code=True)
 
     planner_chats = load_prompts(file_path="./data/gsm8k/planner_examples.txt")
@@ -133,22 +153,8 @@ if __name__ == "__main__":
         tokenizer=solver_critic_tokenizer,
         pad_token_id=planner_tokenizer.eos_token_id,
     )
-    
-    # solver_chats = []
-
-    # solver_model = AutoModelForCausalLM.from_pretrained(args.solver_model, device_map="auto", trust_remote_code=True)
-    # solver_tokenizer = AutoTokenizer.from_pretrained(args.solver_model, trust_remote_code=True)
-
-    # evaluator_model = AutoModelForCausalLM.from_pretrained(args.evaluator_model, device_map="auto", trust_remote_code=True).eval()
-    # evaluator_model.generation_config = GenerationConfig.from_pretrained(
-    #     args.checkpoint_path, trust_remote_code=True
-    # )
-    # evaluator_model.generation_config.max_length = 2048
-    # evaluator_model.generation_config.do_sample = False
-    # evaluator_tokenizer = AutoTokenizer.from_pretrained(args.evaluator_model, trust_remote_code=True)
 
     solver_examples = load_few_shot_examples(args.prompt_folder + "solver_examples.txt")
-    # evaluator_examples = load_few_shot_examples(args.prompt_folder + "evaluator_examples.txt")
 
     config = datasets.DownloadConfig(resume_download=True, max_retries=100)
     dataset = load_dataset("gsm8k", "main", download_config=config)
