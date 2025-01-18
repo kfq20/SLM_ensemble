@@ -13,6 +13,6 @@
 ### 数据获取方式
 运行文件时，会自动从Huggingface官网下载GSM8K数据集，并划分训练集与测试集。
 ### 存放路径
-运行结果存放在 [agent_ensemble_results](./agent_ensemble_results/) 文件夹中。
+运行结果存放在 [log](./log/) 文件夹中。
 ### 处理方式
 运行完成后会自动输出最终正确率（Accuracy）。运行结果中存储了每一条问题的回答结果。
