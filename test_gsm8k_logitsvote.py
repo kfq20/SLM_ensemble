@@ -66,7 +66,15 @@ def decode(tokens_list, tokenizer):
 if __name__ == "__main__":
     model_name_list = ['unsloth/Llama-3.2-1B-Instruct', 'pankajmathur/orca_mini_v9_5_1B-Instruct', 'KingNish/Reasoning-Llama-1b-v0.1']
     performance_list = [0.469, 0.333, 0.316]
+    # performance weighted
     model = LogtisVotingModel(model_name_list, method='weighted', weight_list=performance_list)
+
+    # directly average
+    # model = LogtisVotingModel(model_name_list, method='weighted', weight_list=None)
+
+    # entropy average
+    # model = LogtisVotingModel(model_name_list, method='entropy', weight_list=None)
+
     model.generation_config.do_sample = False
     model.generation_config.top_p = 1.0
     model.generation_config.temperature = 1.0

@@ -52,7 +52,6 @@ def extract_ans_from_response(answer: str, eos=None):
     return last_number
 
 if __name__ == "__main__":
-    # model_name_list = ["Qwen/Qwen2.5-0.5B-Instruct"]
     # model_name_list = ['unsloth/Llama-3.2-1B-Instruct', 'pankajmathur/orca_mini_v9_5_1B-Instruct', 'KingNish/Reasoning-Llama-1b-v0.1']
     # model_name_list = ['unsloth/Llama-3.2-1B-Instruct', 'Qwen/Qwen2.5-0.5B-Instruct', 'pankajmathur/orca_mini_v9_5_1B-Instruct']
     # model_name_list = ['Qwen/Qwen2.5-0.5B-Instruct', 'pankajmathur/orca_mini_v9_5_1B-Instruct', 'KingNish/Reasoning-Llama-1b-v0.1']
