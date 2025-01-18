@@ -1,0 +1,13 @@
+Prediction List: ['28', '56', '68']
+
+Prediction: 28
+
+Ground Truth: Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.
+She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+#### 18
+
+Current Accuracy: 0.000
+
+
+
+Final Accuracy: 0.000

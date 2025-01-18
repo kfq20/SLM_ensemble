@@ -47,7 +47,11 @@ def extract_ans_from_response(answer: str, eos=None):
     # try:
     #     return int(answer)
     # except ValueError:
-    last_number = re.findall(r"\d+", answer)[-1]
+    last_number = re.findall(r"\d+", answer)
+    if last_number:
+        last_number = last_number[-1]
+    else:
+        last_number = 0
     return last_number
 
 def get_response(chats, generator): 
@@ -110,7 +114,8 @@ def run_all(train_data, test_data, generator, log_file_path=None, attempts=1):
                 log_file.write('\n\n')
         else:
             correct += 1
-    print(f"Final Accuracy: {correct/total:.3f}")
+    with open(log_file_path, 'a', encoding='utf-8') as log_file:
+        log_file.write(f"Final Accuracy: {correct/total:.3f}")
 
 def run(model_name, log_dir=None, attempts=1):
     log_file_path = None
@@ -128,4 +133,6 @@ if __name__ == "__main__":
     # model_name = "Qwen/Qwen2.5-0.5B-Instruct"
     # model_name = "unsloth/Llama-3.2-1B-Instruct"
     model_name = "tiiuae/Falcon3-1B-Instruct"
-    run(model_name, f'log/{model_name}/', attempts=1)
+    # run(model_name, f'log/{model_name}/', attempts=3)
+    run(model_name, f'log/{model_name}/', attempts=7)
+    run(model_name, f'log/{model_name}/', attempts=5)
