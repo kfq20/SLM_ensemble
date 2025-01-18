@@ -156,7 +156,7 @@ def run_all(train_data, test_data, generators, log_file_path=None, attempts=1, r
         true_ans = extract_ans_from_response(qna['answer'])
         total += 1
         
-        if pred_ans != true_ans and log_file_path:
+        if log_file_path:
             with open(log_file_path, 'a', encoding='utf-8') as log_file:
                 # log_file.write(f"{messages}\n\n")
                 # log_file.write(f"Response: {response}\n\n")
@@ -165,7 +165,7 @@ def run_all(train_data, test_data, generators, log_file_path=None, attempts=1, r
                 log_file.write(f"Ground Truth: {qna['answer']}\n\n")
                 log_file.write(f"Current Accuracy: {correct/total:.3f}\n\n")
                 log_file.write('\n\n')
-        else:
+        if pred_ans == true_ans:
             correct += 1
     with open(log_file_path, 'a', encoding='utf-8') as log_file:
         log_file.write(f"Final Accuracy: {correct/total:.3f}")
