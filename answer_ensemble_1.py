@@ -7,6 +7,7 @@ from datasets import load_from_disk, load_dataset
 import re
 import os
 from tqdm import tqdm
+import argparse
 
 N_SHOT = 8
 SEED = 42
@@ -37,17 +38,6 @@ def nshot_chats(nshot_data: list, n: int, question: str) -> dict:
     return chats
 
 def extract_ans_from_response(answer: str, eos=None):
-    # if eos:
-    #     answer = answer.split(eos)[0].strip()
-
-    # answer = answer.split('####')[-1].strip()
-
-    # for remove_char in [',', '$', '%', 'g']:
-    #     answer = answer.replace(remove_char, '')
-
-    # try:
-    #     return int(answer)
-    # except ValueError:
     last_number = re.findall(r"\d+", answer)
     if last_number:
         last_number = last_number[-1]
@@ -109,23 +99,20 @@ def run_all(train_data, test_data, generators, log_file_path=None, attempts=1):
         true_ans = extract_ans_from_response(qna['answer'])
         total += 1
         
-        if pred_ans != true_ans and log_file_path:
-            with open(log_file_path, 'a', encoding='utf-8') as log_file:
-                # log_file.write(f"{messages}\n\n")
-                # log_file.write(f"Response: {response}\n\n")
-                log_file.write(f"Prediction List: {pred_ans_list}\n\n")
-                log_file.write(f"Prediction: {pred_ans}\n\n")
-                log_file.write(f"Ground Truth: {qna['answer']}\n\n")
-                log_file.write(f"Current Accuracy: {correct/total:.3f}\n\n")
-                log_file.write('\n\n')
-        else:
-            correct += 1
+        with open(log_file_path, 'a', encoding='utf-8') as log_file:
+            # log_file.write(f"{messages}\n\n")
+            # log_file.write(f"Response: {response}\n\n")
+            log_file.write(f"Prediction List: {pred_ans_list}\n\n")
+            log_file.write(f"Prediction: {pred_ans}\n\n")
+            log_file.write(f"Ground Truth: {qna['answer']}\n\n")
+            log_file.write(f"Current Accuracy: {correct/total:.3f}\n\n")
+            log_file.write('\n\n')
+        correct += 1
     print(f"Final Accuracy: {correct/total:.3f}")
 
-def run(models, log_dir=None, attempts=1):
+def run(models, file_name=None, log_dir=None, attempts=1):
     log_file_path = None
-    if log_dir:
-        file_name = f'errors_{attempts}attempt_{SEED}.txt'
+    if file_name and log_dir:
         log_file_path = log_dir+file_name
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
@@ -134,10 +121,14 @@ def run(models, log_dir=None, attempts=1):
     train_data, test_data, generators = prepare(models)
     run_all(train_data, test_data, generators, log_file_path, attempts)
     
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run GSM8K test with multiple models')
+    parser.add_argument('--models', nargs='+', help='List of models to use', required=True)
+    parser.add_argument('--file_name', help='Name of the log file', default='log1.txt')
+    parser.add_argument('--log_dir', help='Directory to save log files', default='log/multi_model/')
+    parser.add_argument('--attempts', type=int, help='Number of attempts for each question', default=1)
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    models = [
-        "Qwen/Qwen2.5-0.5B-Instruct",
-        "unsloth/Llama-3.2-1B-Instruct",
-        "tiiuae/Falcon3-1B-Instruct",
-    ]
-    run(models, f'log/multi_model/', attempts=1)
+    args = parse_args()
+    run(args.models, args.file_name, args.log_dir, args.attempts)

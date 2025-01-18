@@ -7,6 +7,7 @@ from datasets import load_from_disk, load_dataset
 import re
 import os
 from tqdm import tqdm
+import argparse
 
 N_SHOT = 8
 
@@ -121,7 +122,7 @@ Please check every solution, and please give a score from 1 to 10 for every solu
         # Fallback if the response is invalid
         return -1
     
-def run_all(train_data, test_data, generators, log_file_path=None, attempts=1):
+def run_all(train_data, test_data, generators, log_file_path=None, attempts=1, round_2_model_index=None):
     correct = 0
     total = 0
     for qna in tqdm(test_data):
@@ -135,7 +136,11 @@ def run_all(train_data, test_data, generators, log_file_path=None, attempts=1):
                 pred_ans_list.append(pred_ans)
         best_response_index_list = []
         response_list_twice = response_list + response_list
-        for generator in [generators[1]]:
+        if round_2_model_index:
+            round_2_model = [generators[int(i)] for i in round_2_model_index]
+        else:
+            round_2_model = generators
+        for generator in round_2_model:
             for i in range(len(response_list)):
                 index = select_best_response(response_list_twice[i: i + len(response_list)], qna, generator)
                 if 0 <= index < len(response_list):
@@ -165,22 +170,27 @@ def run_all(train_data, test_data, generators, log_file_path=None, attempts=1):
     with open(log_file_path, 'a', encoding='utf-8') as log_file:
         log_file.write(f"Final Accuracy: {correct/total:.3f}")
 
-def run(models, log_dir=None, attempts=1):
+def run(models, file_name=None, log_dir=None, attempts=1, round_2_model_index=None):
     log_file_path = None
-    if log_dir:
-        file_name = f'errors_{attempts}attempt.txt'
+    if file_name and log_dir:
         log_file_path = log_dir+file_name
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         with open(log_file_path, 'w') as log_file:
             log_file.write('')
     train_data, test_data, generators = prepare(models)
-    run_all(train_data, test_data, generators, log_file_path, attempts)
+    run_all(train_data, test_data, generators, log_file_path, attempts, round_2_model_index)
     
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run GSM8K test with multiple models')
+    parser.add_argument('--models', nargs='+', help='List of models to use', required=True)
+    parser.add_argument('--file_name', help='Name of the log file', default='log2.txt')
+    parser.add_argument('--log_dir', help='Directory to save log files', default='log/multi_model/')
+    parser.add_argument('--attempts', type=int, help='Number of attempts for each question', default=1)
+    parser.add_argument('--round_2_model_index', nargs='+', help='List of models to use for round 2', required=True)
+    # example: python answer_ensemble_2.py --models unsloth/Llama-3.2-1B-Instruct tiiuae/Falcon3-1B-Instruct Qwen/Qwen2.5-0.5B-Instruct --file_name log1.txt --log_dir log/multi_model/ --attempts 1 --round_2_model_index 0 1
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    models = [
-        "tiiuae/Falcon3-1B-Instruct",
-        "unsloth/Llama-3.2-1B-Instruct",
-        "Qwen/Qwen2.5-0.5B-Instruct",
-    ]
-    run(models, f'log/multi_model_voting/', attempts=1)
+    args = parse_args()
+    run(args.models, args.file_name, args.log_dir, args.attempts, args.round_2_model_index)
