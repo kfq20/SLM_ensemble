@@ -1,0 +1,30 @@
+Question: In 2004, there were 60 kids at a cookout. In 2005, half the number of kids came to the cookout as compared to 2004. In 2006, 2/3 as many kids came to the cookout as in 2005. How many kids came to the cookout in 2006?  
+Let's break down the problem and suggest every step to compute, without giving the specific calculation procedure
+
+Frist, Calculate the number of kids in 2005: Take half of the number of kids from 2004.  
+Then Calculate the number of kids in 2006: Take 2/3 of the number of kids from 2005.
+
+
+Question: Zilla spent 7% of her monthly earnings on rent, half of it on her other monthly expenses, and put the rest in her savings. If she spent $133 on her rent, how much does she deposit into her savings account in a month?
+Let's break down the problem and suggest every step to compute, without giving the specific calculation procedure
+
+Frist, Find Zilla’s total monthly earnings: Use the fact that $133 is 7% of her earnings.  
+Then Determine the amount spent on other expenses: This is half of her total monthly earnings.  
+Then Calculate her savings: Subtract the amounts spent on rent and other expenses from her total monthly earnings.
+
+
+Question: If Buzz bought a pizza with 78 slices at a restaurant and then decided to share it with the waiter in the ratio of 5:8, with Buzz's ratio being 5, what's twenty less the number of slices of pizza that the waiter ate?
+Let's break down the problem and suggest every step to compute, without giving the specific calculation procedure
+
+Frist, Determine the total ratio: Add the ratio values for Buzz and the waiter 5 + 8 = 13.  
+Then Calculate the size of one part: Divide the total number of slices by the total ratio to find the number of slices each part represents.  
+Then Calculate the waiter’s share: Multiply the size of one part by the waiter’s ratio.  
+Finally Subtract 20 from the waiter’s share: This gives the final result.
+
+
+Question: Mr. Gardner bakes 20 cookies, 25 cupcakes, and 35 brownies for his second-grade class of 20 students. If he wants to give each student an equal amount of sweet treats, how many sweet treats will each student receive?
+Let's break down the problem and suggest every step to compute, without giving the specific calculation procedure
+
+Frist, Calculate the total number of sweet treats: Add the number of cookies, cupcakes, and brownies baked.  
+Then, Divide the total number of sweet treats by the number of students: This gives the number of sweet treats each student will receive.  
+Finally Ensure the distribution is equal: Verify the total is divisible evenly among the students.
