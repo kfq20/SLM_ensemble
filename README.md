@@ -7,29 +7,29 @@
 ## 处理方式
 运行完成后会自动输出最终正确率（Accuracy）。运行结果中存储了每一条问题的回答结果。
 
-## Low-level Ensemble
+## Low-level 集成
 ### Logits level
 
 ```sh
-python test_gsm8k_logitsvote.py
+python logit_ensemble.py
 ```
 使用上述代码来快速启动测试（默认为使用 performance weighted 加权）。
-调整 `test_gsm8k_logitsvote.py` 的第 69 - 76 行来改变 Logits level 的集成方法。
+调整 `logit_ensemble.py` 的第 69 - 76 行来改变 Logits level 的集成方法。
 
 ### Token level
 - **不同模型相同输入**
 ```sh
-python test_gsm8k_tokenvote.py
+python token_ensemble_multimodel.py
 ```
 使用上述代码来快速启动测试（默认为使用所有四个模型）。
-调整 `test_gsm8k_tokenvote.py` 的第 55 - 58 行来改变使用的模型类型。
+调整 `token_ensemble_multimodel.py` 的第 55 - 58 行来改变使用的模型类型。
 
 - **相同模型不同 few-shot**
 ```sh
-python test_gsm8k_tokenvote_difshot.py
+python token_ensemble_difshot.py
 ```
 使用上述代码来快速启动测试（默认为使用五个Qwen 0.5B模型）。
-调整 `test_gsm8k_tokenvote_difshot.py` 的第 59, 60 行来改变使用的模型类型和数量。
+调整 `token_ensemble_difshot.py` 的第 59, 60 行来改变使用的模型类型和数量。
 
 ## Answer-Level集成
 对于【Answer-level集成算法1】，在命令行中运行 `python answer_ensemble_1.py`。可指定如下参数：
